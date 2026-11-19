@@ -1,0 +1,83 @@
+<ui-modal labelledBy="perfil-title" (dismissed)="cerrar()">
+  <div class="modal-heading">
+    <div>
+      <h2 id="perfil-title">Mi perfil</h2>
+      <p class="muted small">
+        {{ email }} · <span class="role">{{ rol }}</span>
+      </p>
+    </div>
+    <button autofocus class="btn btn-square btn-sm icon-button" aria-label="Cerrar" (click)="cerrar()">
+      <ui-icon name="close" />
+    </button>
+  </div>
+
+  <section class="perfil-section">
+    <h3>Datos</h3>
+    <label class="field">
+      <span>Nombre</span>
+      <input class="input" name="perfilNombre" [(ngModel)]="nombre" autocomplete="name" />
+    </label>
+    <p class="muted small">El correo y el rol los gestiona un administrador.</p>
+    <div class="perfil-actions">
+      <button
+        class="btn btn-primary"
+        [disabled]="guardando() || !nombre.trim()"
+        (click)="guardarDatos()"
+      >
+        Guardar datos
+      </button>
+    </div>
+  </section>
+
+  <section class="perfil-section">
+    <h3>Contraseña</h3>
+    <label class="field">
+      <span>Contraseña actual</span>
+      <input
+        class="input"
+        [type]="mostrar ? 'text' : 'password'"
+        name="perfilActual"
+        [(ngModel)]="actual"
+        autocomplete="current-password"
+      />
+    </label>
+    <label class="field">
+      <span>Nueva contraseña</span>
+      <input
+        class="input"
+        [type]="mostrar ? 'text' : 'password'"
+        name="perfilNueva"
+        [(ngModel)]="nueva"
+        autocomplete="new-password"
+        placeholder="Mínimo 8 caracteres"
+      />
+    </label>
+    <label class="field">
+      <span>Confirmar nueva contraseña</span>
+      <input
+        class="input"
+        [type]="mostrar ? 'text' : 'password'"
+        name="perfilConfirmar"
+        [(ngModel)]="confirmar"
+        autocomplete="new-password"
+      />
+    </label>
+    <label class="checkbox-label">
+      <input class="checkbox" type="checkbox" name="perfilMostrar" [(ngModel)]="mostrar" />
+      Mostrar contraseñas
+    </label>
+    <div class="perfil-actions">
+      <button
+        class="btn btn-primary"
+        [disabled]="guardando() || !puedeCambiar()"
+        (click)="cambiarPassword()"
+      >
+        Cambiar contraseña
+      </button>
+    </div>
+  </section>
+
+  @if (error()) {
+    <p class="error-banner alert alert-error" role="alert">{{ error() }}</p>
+  }
+</ui-modal>

@@ -1,0 +1,178 @@
+<a href="#main-content" class="skip-link" (click)="skip($event)">Saltar al contenido</a>
+@if (!s.usuario()) {
+  <main id="main-content" tabindex="-1" class="login-shell">
+    <router-outlet />
+  </main>
+} @else {
+  <aside class="sidebar">
+    <a routerLink="/inicio" class="brand" aria-label="InvenTI QR">
+      <span class="brand-mark"><ui-icon name="scan" /></span>
+      <span class="brand-word">inventi<span class="brand-sub">Inventario TI</span></span>
+    </a>
+    <div class="workspace-label">
+      <span class="company-symbol">IQ</span>
+      <div>InvenTI QR<span>Proyecto universitario</span></div>
+    </div>
+    <nav aria-label="Navegación principal">
+      <span class="nav-label">Operación</span>
+      @for (item of nav(); track item.path) {
+        <a [routerLink]="item.path" [attr.aria-label]="item.name" routerLinkActive="active" ariaCurrentWhenActive="page">
+          <ui-icon [name]="item.icon" /><span>{{ item.name }}</span>
+          @if (item.path === '/alertas' && alertCount()) {
+            <span class="nav-count">{{ alertCount() }}</span>
+          }
+        </a>
+      }
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="pwa-state">
+        <span [class]="'status-dot ' + pwa.offlineTone()"></span>
+        <span>{{ pwa.offlineLabel() }}</span>
+      </div>
+      <button class="sidebar-install" (click)="pwa.canInstall() ? pwa.install() : installHelp.set(true)">
+        <ui-icon name="download" />{{ pwa.installed() ? 'Aplicación instalada' : 'Instalar aplicación' }}
+      </button>
+      <button type="button" class="profile" (click)="abrirPerfil()" aria-label="Abrir mi perfil">
+        <span class="avatar">{{ s.usuario()!.nombre.slice(0, 2).toUpperCase() }}</span>
+        <div>{{ s.usuario()!.nombre }}<span>{{ rolLabel(s.usuario()!.rol) }}</span></div>
+      </button>
+      <button class="logout-button" (click)="salir()"><ui-icon name="logout" /><span>Cerrar sesión</span></button>
+    </div>
+  </aside>
+  <div class="app-shell">
+    <header class="topbar">
+      <a routerLink="/inicio" class="topbar-brand" aria-label="InvenTI QR">
+        <span class="brand-mark"><ui-icon name="scan" /></span>
+        <span class="topbar-brand-word">inventi<small>TI</small></span>
+      </a>
+      <div class="topbar-context">
+        <span class="topbar-kicker">Inventario de activos TI</span>
+        <span class="breadcrumb">Inventario de activos TI</span>
+      </div>
+      <div class="topbar-actions">
+        <span [class]="'connection ' + (s.offline() ? 'disconnected' : '')">
+          <span class="status-dot"></span>
+          <span class="connection-text">{{ s.offline() ? 'Sin conexión' : 'Conectado' }}</span>
+        </span>
+        <button class="btn btn-outline topbar-scan" aria-label="Consultar equipo por QR" title="Consultar equipo por QR" (click)="scanner.set(true)">
+          <ui-icon name="scan" /><span>Escanear QR</span>
+        </button>
+      </div>
+    </header>
+    <main id="main-content" tabindex="-1">
+      @if (s.error()) {
+        <div role="alert" class="error-banner alert alert-error">{{ s.error() }}</div>
+      } @else if (!s.ready()) {
+        <div class="empty-state"><h1>Abriendo inventario…</h1><p>Preparando almacenamiento local.</p></div>
+      } @else {
+        <router-outlet />
+      }
+    </main>
+  </div>
+  <nav class="tabbar" aria-label="Navegación principal en móvil">
+    @for (item of primaryNav(); track item.path) {
+      <a [routerLink]="item.path" [attr.aria-label]="item.name" routerLinkActive="active" ariaCurrentWhenActive="page">
+        <span class="tab-icon">
+          <ui-icon [name]="item.icon" />
+          @if (item.path === '/alertas' && alertCount()) {
+            <span class="tab-count">{{ alertCount() }}</span>
+          }
+        </span>
+        <span class="tab-label">{{ item.name }}</span>
+      </a>
+    }
+    <button
+      type="button"
+      class="tab-more"
+      [class.active]="moreActive()"
+      [attr.aria-current]="moreActive() ? 'page' : null"
+      aria-label="Más secciones y cuenta"
+      (click)="moreOpen.set(true)"
+    >
+      <span class="tab-icon"><ui-icon name="more" /></span>
+      <span class="tab-label">Más</span>
+    </button>
+  </nav>
+  @if (moreOpen()) {
+  <ui-modal labelledBy="more-title" [sheet]="true" [dismissOnBackdrop]="true" (dismissed)="moreOpen.set(false)">
+    <div class="modal-heading">
+      <div>
+        <span class="eyebrow">Secciones y cuenta</span>
+        <h2 id="more-title">Más</h2>
+      </div>
+      <button autofocus type="button" class="btn btn-square btn-sm icon-button" aria-label="Cerrar menú" (click)="moreOpen.set(false)">
+        <ui-icon name="close" />
+      </button>
+    </div>
+    @if (extraNav().length) {
+      <nav class="more-nav" aria-label="Más secciones">
+        @for (item of extraNav(); track item.path) {
+          <a
+            [routerLink]="item.path"
+            [attr.aria-label]="item.name"
+            routerLinkActive="active"
+            ariaCurrentWhenActive="page"
+            (click)="moreOpen.set(false)"
+          >
+            <span class="more-icon"><ui-icon [name]="item.icon" /></span>
+            <span class="more-name">{{ item.name }}</span>
+            <ui-icon name="arrow" />
+          </a>
+        }
+      </nav>
+    }
+    <div class="more-footer">
+      <div class="more-status">
+        <span [class]="'status-dot ' + pwa.offlineTone()"></span>
+        <span>{{ pwa.offlineLabel() }}</span>
+      </div>
+      <button type="button" class="more-action" (click)="install()">
+        <ui-icon name="download" />{{ pwa.installed() ? 'Aplicación instalada' : 'Instalar aplicación' }}
+      </button>
+      <button type="button" class="more-profile" (click)="abrirPerfil()" aria-label="Abrir mi perfil">
+        <span class="avatar">{{ s.usuario()!.nombre.slice(0, 2).toUpperCase() }}</span>
+        <div>{{ s.usuario()!.nombre }}<span>{{ rolLabel(s.usuario()!.rol) }}</span></div>
+      </button>
+      <button type="button" class="more-logout" (click)="salir()">
+        <ui-icon name="logout" /><span>Cerrar sesión</span>
+      </button>
+    </div>
+  </ui-modal>
+  }
+  @if (perfilOpen()) {
+    <app-perfil-modal (dismissed)="perfilOpen.set(false)" />
+  }
+}
+@if (s.toast(); as toast) {
+  <div [class]="'toast alert alert-' + toast.kind" role="status" aria-live="polite">
+    <ui-icon [name]="toast.kind === 'success' ? 'check' : toast.kind === 'error' ? 'warn' : 'help'" />
+    <span>{{ toast.text }}</span>
+    <button class="btn btn-square btn-sm icon-button" aria-label="Cerrar aviso" (click)="s.toast.set(null)"><ui-icon name="close" /></button>
+  </div>
+}
+@if (pwa.update()) {
+  <div class="update-banner" role="status">
+    <span>Actualización disponible.</span>
+    <button class="btn btn-outline" (click)="pwa.reload()">Actualizar</button>
+  </div>
+}
+@if (scanner()) {
+  <qr-scanner (decoded)="lookup($event)" (dismissed)="scanner.set(false)" />
+}
+@if (installHelp()) {
+  <ui-modal labelledBy="install-title" (dismissed)="installHelp.set(false)">
+    <div class="modal-heading">
+      <h2 id="install-title">Instalar aplicación</h2>
+      <button autofocus class="btn btn-square btn-sm icon-button" aria-label="Cerrar ayuda de instalación" (click)="installHelp.set(false)">
+        <ui-icon name="close" />
+      </button>
+    </div>
+    <p>En Chrome o Edge, selecciona «Instalar aplicación» en el menú del navegador.</p>
+    @if (pwa.enabled) {
+      <p class="small muted">Espera el indicador «Modo offline listo» antes de desconectarte.</p>
+    } @else {
+      <p class="small muted">Estás en el servidor de desarrollo: el modo offline solo se activa en la app compilada o instalada.</p>
+    }
+    <button class="btn btn-primary" (click)="installHelp.set(false)">Entendido</button>
+  </ui-modal>
+}

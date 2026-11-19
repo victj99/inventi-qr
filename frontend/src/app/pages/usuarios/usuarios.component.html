@@ -1,0 +1,341 @@
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">Administración</span>
+    <h1>Usuarios y roles</h1>
+    <p class="muted">
+      {{ resumen().total }} {{ resumen().total === 1 ? 'cuenta' : 'cuentas' }} ·
+      {{ resumen().activos }} {{ resumen().activos === 1 ? 'activa' : 'activas' }} ·
+      {{ resumen().admins }} {{ resumen().admins === 1 ? 'administrador' : 'administradores' }}
+    </p>
+  </div>
+  <div class="heading-actions">
+    <button class="btn btn-primary" (click)="abrirForm()">
+      <ui-icon name="user" />Nuevo usuario
+    </button>
+  </div>
+</div>
+
+<section class="panel card card-body bg-base-100 border border-base-300 shadow-card" [attr.aria-busy]="cargando()">
+  @if (formAbierto()) {
+    <form class="inline-form user-form" (ngSubmit)="crear()">
+      <label
+        >Nombre<input class="input"
+          name="nombre"
+          [(ngModel)]="nuevo.nombre"
+          required
+          autofocus
+          placeholder="Nombre completo"
+      /></label>
+      <label
+        >Correo<input class="input"
+          type="email"
+          name="email"
+          [(ngModel)]="nuevo.email"
+          required
+          autocomplete="off"
+          placeholder="nombre&#64;inventi.pe"
+      /></label>
+      <label
+        >Rol<select class="select" name="rol" [(ngModel)]="nuevo.rol">
+          @for (r of roles; track r.value) {
+            <option [value]="r.value">{{ r.label }}</option>
+          }
+        </select></label
+      >
+      <label
+        >Contraseña<input class="input"
+          [type]="mostrarNuevoPassword ? 'text' : 'password'"
+          name="password"
+          [(ngModel)]="nuevo.password"
+          required
+          autocomplete="new-password"
+          placeholder="Mínimo 8 caracteres"
+      /></label>
+      <label
+        >Confirmar contraseña<input class="input"
+          [type]="mostrarNuevoPassword ? 'text' : 'password'"
+          name="passwordConfirmar"
+          [(ngModel)]="nuevo.confirmar"
+          required
+          autocomplete="new-password"
+          placeholder="Repite la contraseña"
+      /></label>
+      <label class="checkbox-label user-check">
+        <input class="checkbox" type="checkbox" name="mostrarNuevo" [(ngModel)]="mostrarNuevoPassword" />
+        Mostrar
+      </label>
+      <div class="user-form-actions">
+        <button class="btn btn-primary" type="submit" [disabled]="!puedeCrear()">
+          Crear usuario
+        </button>
+        <button class="btn btn-outline" type="button" (click)="formAbierto.set(false)">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  }
+
+  <div class="user-filters">
+    <label class="search-field">
+      <ui-icon name="search" />
+      <input class="input"
+        name="buscarUsuario"
+        [ngModel]="q()"
+        (ngModelChange)="q.set($event)"
+        autocomplete="off"
+        placeholder="Buscar por nombre o correo"
+        aria-label="Buscar usuario"
+      />
+    </label>
+    <label
+      >Rol<select class="select" name="filtroRol" [ngModel]="rolFiltro()" (ngModelChange)="setRolFiltro($event)">
+        <option value="">Todos</option>
+        @for (r of roles; track r.value) {
+          <option [value]="r.value">{{ r.label }}</option>
+        }
+      </select></label
+    >
+    <label
+      >Estado<select class="select"
+        name="filtroEstado"
+        [ngModel]="estadoFiltro()"
+        (ngModelChange)="setEstadoFiltro($event)"
+      >
+        <option value="todos">Todos</option>
+        <option value="activos">Activas</option>
+        <option value="inactivos">Inactivas</option>
+      </select></label
+    >
+    @if (q() || rolFiltro() || estadoFiltro() !== 'todos') {
+      <button class="btn btn-outline user-clear" type="button" (click)="limpiarFiltros()">
+        Limpiar filtros
+      </button>
+    }
+  </div>
+
+  <div class="table-caption">
+    <strong>{{ filtrados().length }} de {{ usuarios().length }} cuentas</strong>
+    <span>Cambiar rol, correo o contraseña cierra la sesión del usuario.</span>
+  </div>
+
+  <div class="table-scroll">
+    <table class="table user-table" aria-label="Usuarios del sistema">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Último acceso</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (u of filtrados(); track u.id) {
+          <tr>
+            <td data-label="Usuario">
+              <div class="user-cell">
+                <span class="user-initials">{{ iniciales(u) }}</span>
+                <div>
+                  <strong>{{ u.nombre }}</strong>
+                  @if (esYo(u)) {
+                    <span class="badge badge-neutral user-self">Tu cuenta</span>
+                  }
+                  <span class="muted small block">{{ u.email }}</span>
+                </div>
+              </div>
+            </td>
+            <td data-label="Rol">
+              <span class="badge badge-neutral user-role">{{ rolLabel(u.rol) }}</span>
+            </td>
+            <td data-label="Estado">
+              <span [class]="'badge pill ' + (u.activo === false ? 'unknown' : 'green')">
+                <span class="status-dot"></span>{{ u.activo === false ? 'Inactiva' : 'Activa' }}
+              </span>
+            </td>
+            <td data-label="Último acceso">
+              <span class="small user-access">{{ hace(u.ultimoAcceso) }}</span>
+            </td>
+            <td data-label="Acciones">
+              <button class="btn btn-outline user-edit" (click)="abrirEditar(u)">Editar</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <ui-icon name="user" />
+                @if (usuarios().length === 0) {
+                  <h3>Sin usuarios</h3>
+                  <p>Todavía no hay cuentas registradas.</p>
+                  <button class="btn btn-primary" (click)="abrirForm()">Nuevo usuario</button>
+                } @else {
+                  <h3>Sin resultados</h3>
+                  <p>Ninguna cuenta coincide con los filtros.</p>
+                  <button class="btn btn-outline" (click)="limpiarFiltros()">
+                    Limpiar filtros
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (editando(); as u) {
+  <ui-modal labelledBy="editar-usuario-title" (dismissed)="cerrarEditar()">
+    <div class="modal-heading">
+      <div>
+        <h2 id="editar-usuario-title">Editar usuario</h2>
+        <p class="muted small">{{ u.email }}</p>
+      </div>
+      <button autofocus class="btn btn-square btn-sm icon-button" aria-label="Cerrar" (click)="cerrarEditar()">
+        <ui-icon name="close" />
+      </button>
+    </div>
+
+    @if (esYo(u)) {
+      <p class="notice alert alert-warning">
+        Tu correo, rol y estado solo los puede cambiar otro administrador. Puedes editar tu nombre.
+      </p>
+    }
+
+    <label class="field">
+      <span>Nombre</span>
+      <input class="input" name="editNombre" [(ngModel)]="editModel.nombre" autocomplete="name" />
+    </label>
+    <label class="field">
+      <span>Correo</span>
+      <input class="input"
+        type="email"
+        name="editEmail"
+        [(ngModel)]="editModel.email"
+        autocomplete="off"
+        [disabled]="esYo(u)"
+      />
+    </label>
+    <label class="field">
+      <span>Rol</span>
+      <select class="select" name="editRol" [(ngModel)]="editModel.rol" [disabled]="esYo(u)">
+        @for (r of roles; track r.value) {
+          <option [value]="r.value">{{ r.label }}</option>
+        }
+      </select>
+    </label>
+    <label class="checkbox-label">
+      <input class="checkbox"
+        type="checkbox"
+        name="editActivo"
+        [(ngModel)]="editModel.activo"
+        [disabled]="esYo(u)"
+      />
+      Cuenta activa
+    </label>
+
+    @if (editError()) {
+      <p class="error-banner alert alert-error" role="alert">{{ editError() }}</p>
+    }
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" (click)="cerrarEditar()">Cancelar</button>
+      <button class="btn btn-primary" [disabled]="!puedeGuardarEdicion()" (click)="guardarEdicion()">
+        Guardar cambios
+      </button>
+    </div>
+
+    @if (!esYo(u)) {
+      <div class="user-secondary-actions">
+        <button class="btn btn-outline" (click)="abrirPassword(u)">Restablecer contraseña</button>
+        @if (u.activo === false) {
+          <button class="btn btn-outline" (click)="cambiarEstado(u, true)">
+            Reactivar cuenta
+          </button>
+        } @else {
+          <button class="btn btn-outline btn-error" (click)="pedirDesactivar(u)">Desactivar cuenta</button>
+        }
+      </div>
+    }
+  </ui-modal>
+}
+
+@if (passwordForm(); as u) {
+  <ui-modal labelledBy="password-title" (dismissed)="cerrarPassword()">
+    <div class="modal-heading">
+      <h2 id="password-title">Restablecer contraseña</h2>
+      <button autofocus class="btn btn-square btn-sm icon-button" aria-label="Cerrar" (click)="cerrarPassword()">
+        <ui-icon name="close" />
+      </button>
+    </div>
+    <p class="muted small">{{ u.nombre }} · {{ u.email }}</p>
+    <p class="notice alert alert-warning">
+      Al guardar, se cerrará la sesión de {{ u.nombre }}. Comunícale la nueva contraseña por un
+      canal seguro.
+    </p>
+    <label class="field">
+      <span>Nueva contraseña</span>
+      <input class="input"
+        [type]="mostrarPassword ? 'text' : 'password'"
+        name="passwordNueva"
+        [(ngModel)]="passwordNueva"
+        autocomplete="new-password"
+        aria-label="Nueva contraseña"
+        placeholder="Mínimo 8 caracteres"
+      />
+    </label>
+    <label class="field">
+      <span>Confirmar contraseña</span>
+      <input class="input"
+        [type]="mostrarPassword ? 'text' : 'password'"
+        name="passwordConfirmar"
+        [(ngModel)]="passwordConfirmar"
+        autocomplete="new-password"
+        aria-label="Confirmar contraseña"
+        placeholder="Repite la contraseña"
+      />
+    </label>
+    <label class="checkbox-label">
+      <input class="checkbox" type="checkbox" name="mostrarPassword" [(ngModel)]="mostrarPassword" />
+      Mostrar contraseñas
+    </label>
+    @if (passwordError()) {
+      <p class="error-banner alert alert-error" role="alert">{{ passwordError() }}</p>
+    }
+    <div class="modal-actions">
+      <button class="btn btn-outline" (click)="cerrarPassword()">Cancelar</button>
+      <button
+        class="btn btn-primary"
+        [disabled]="!puedeGuardarPassword()"
+        (click)="guardarPassword()"
+      >
+        Guardar contraseña
+      </button>
+    </div>
+  </ui-modal>
+}
+
+@if (confirmarDesactivar(); as u) {
+  <ui-modal labelledBy="desactivar-title" (dismissed)="confirmarDesactivar.set(null)">
+    <div class="modal-heading">
+      <h2 id="desactivar-title">Desactivar cuenta</h2>
+      <button
+        autofocus
+        class="btn btn-square btn-sm icon-button"
+        aria-label="Cerrar"
+        (click)="confirmarDesactivar.set(null)"
+      >
+        <ui-icon name="close" />
+      </button>
+    </div>
+    <p>
+      <strong>{{ u.nombre }}</strong> dejará de poder iniciar sesión y su sesión actual se cerrará.
+      El historial de sus acciones y sus registros se conservan.
+    </p>
+    <p class="muted small">Puedes reactivar la cuenta más adelante sin perder datos.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" (click)="confirmarDesactivar.set(null)">Cancelar</button>
+      <button class="btn btn-outline btn-error" (click)="confirmarDesactivacion()">Desactivar cuenta</button>
+    </div>
+  </ui-modal>
+}

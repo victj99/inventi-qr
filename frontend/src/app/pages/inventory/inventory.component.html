@@ -1,0 +1,139 @@
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">Parque de equipos</span>
+    <h1>Inventario</h1>
+    <p class="muted">{{ s.activos().length }} equipos registrados</p>
+  </div>
+  <div class="heading-actions">
+    @if (puede('exportar')) {
+      <button class="btn btn-outline" (click)="exportarXlsx()">
+        <ui-icon name="download" />Exportar Excel
+      </button>
+    }
+    @if (puede('importar')) {
+      <button class="btn btn-outline" (click)="fileInput.click()">
+        <ui-icon name="upload" />Importar CSV
+      </button>
+      <input #fileInput type="file" accept=".csv,text/csv" hidden (change)="importar($event)" />
+    }
+    @if (puede('etiquetas')) {
+      <a routerLink="/etiquetas" class="btn btn-outline"><ui-icon name="scan" />Etiquetas QR</a>
+    }
+    @if (puede('crear')) {
+      <a routerLink="/activo-nuevo" class="btn btn-primary"><ui-icon name="box" />Nuevo activo</a>
+    }
+  </div>
+</div>
+
+<section class="panel card card-body bg-base-100 border border-base-300 shadow-card">
+  <div class="filters">
+    <label class="search-field">
+      <ui-icon name="search" />
+      <input
+        class="input"
+        aria-label="Buscar equipo"
+        placeholder="Buscar por código, equipo o responsable"
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      />
+    </label>
+    <label
+      >Ubicación
+      <select class="select" [ngModel]="ubicacion()" (ngModelChange)="ubicacion.set($event)">
+        <option value="">Todas</option>
+        @for (u of ubicaciones(); track u) {
+          <option>{{ u }}</option>
+        }
+      </select>
+    </label>
+    <label
+      >Tipo
+      <select class="select" [ngModel]="tipo()" (ngModelChange)="tipo.set($event)">
+        <option value="">Todos</option>
+        @for (t of tipos(); track t) {
+          <option>{{ t }}</option>
+        }
+      </select>
+    </label>
+    <label
+      >Estado
+      <select class="select" [ngModel]="estado()" (ngModelChange)="estado.set($event)">
+        <option value="">Todos</option>
+        @for (e of estadosOp; track e) {
+          <option [value]="e">{{ humano(e) }}</option>
+        }
+      </select>
+    </label>
+    <label
+      >Atención
+      <select class="select" [ngModel]="level()" (ngModelChange)="level.set($event)">
+        <option value="">Todas</option>
+        <option value="red">Prioritaria</option>
+        <option value="amber">Revisar pronto</option>
+        <option value="green">Sin alertas</option>
+        <option value="unknown">Datos incompletos</option>
+      </select>
+    </label>
+  </div>
+  <div class="table-caption">
+    <strong>{{ filtered().length }} {{ filtered().length === 1 ? 'equipo' : 'equipos' }}</strong>
+  </div>
+  <div class="table-scroll">
+    <table class="table table-zebra">
+      <thead>
+        <tr>
+          <th>Equipo</th>
+          <th>Ubicación y responsable</th>
+          <th>Estado operativo</th>
+          <th>Atención</th>
+          <th><span class="sr-only">Ficha</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (a of filtered(); track a.id) {
+          <tr>
+            <td>
+              <div class="asset-cell">
+                <span class="device-icon"><ui-icon [name]="icon(a.tipo)" /></span>
+                <div>
+                  <a [routerLink]="['/activo', a.id]" class="asset-name">{{ nombre(a) }}</a>
+                  <span class="muted small">{{ a.codigo }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              {{ a.ubicacion
+              }}<span class="muted small block">{{ a.responsable || 'Sin asignar' }}</span>
+            </td>
+            <td>
+              {{ humano(a.estadoOp) }}<span class="muted small block">{{ humano(a.asignacion) }}</span>
+            </td>
+            <td>
+              <span [class]="'badge pill ' + s.atencion(a).level"
+                ><i class="status-dot"></i>{{ s.atencion(a).label }}</span
+              >
+            </td>
+            <td>
+              <a
+                class="btn btn-square btn-sm icon-button"
+                [routerLink]="['/activo', a.id]"
+                [attr.aria-label]="'Abrir ficha de ' + a.codigo"
+                ><ui-icon name="arrow"
+              /></a>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <ui-icon name="search" />
+                <h3>Sin resultados</h3>
+                <button class="btn btn-outline" (click)="clear()">Limpiar filtros</button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

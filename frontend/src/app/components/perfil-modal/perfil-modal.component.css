@@ -1,0 +1,34 @@
+:host {
+  display: block;
+}
+
+.perfil-section {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.perfil-section h3 {
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.perfil-section .muted {
+  margin: 8px 0 0;
+}
+
+.role {
+  text-transform: capitalize;
+}
+
+.perfil-actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 14px;
+}
+
+@media (max-width: 520px) {
+  .perfil-actions .btn {
+    width: 100%;
+  }
+}

@@ -1,0 +1,50 @@
+<div class="page-heading no-print">
+  <div>
+    <h1>Etiquetas QR</h1>
+    <p class="muted">
+      Imprime y pega en cada equipo. El QR abre la ficha al escanear. ·
+      {{ etiquetas().length }} etiquetas
+    </p>
+  </div>
+  <div class="heading-actions">
+    <label
+      >Ubicación
+      <select class="select" [ngModel]="ubicacion()" (ngModelChange)="ubicacion.set($event)">
+        <option value="">Todas</option>
+        @for (u of ubicaciones(); track u) {
+          <option>{{ u }}</option>
+        }
+      </select>
+    </label>
+    <button
+      class="btn btn-primary"
+      (click)="imprimir()"
+      [disabled]="!etiquetas().length || cargando()"
+    >
+      <ui-icon name="printer" />Imprimir
+    </button>
+  </div>
+</div>
+@if (cargando()) {
+  <p class="muted no-print">Generando códigos QR…</p>
+}
+<div class="label-sheet">
+  @for (e of etiquetas(); track e.a.id) {
+    <div class="label">
+      <img
+        [src]="e.qr"
+        [alt]="'QR de ' + e.a.codigo"
+        width="104"
+        height="104"
+      />
+      <div class="label-text">
+        <strong>{{ e.a.codigo }}</strong>
+        <span>{{ nombre(e.a) }}</span>
+        <span class="small">{{ e.a.ubicacion }}</span>
+        <span class="small label-brand">InvenTI QR</span>
+      </div>
+    </div>
+  } @empty {
+    <p class="muted no-print">No hay activos para etiquetar.</p>
+  }
+</div>

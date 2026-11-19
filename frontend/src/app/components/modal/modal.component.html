@@ -1,0 +1,12 @@
+<dialog
+  #dialog
+  class="modal"
+  [class.sheet]="sheet()"
+  [attr.aria-labelledby]="labelledBy()"
+  (cancel)="dismissed.emit()"
+  (click)="backdrop($event)"
+>
+  <div class="modal-box">
+    <ng-content />
+  </div>
+</dialog>

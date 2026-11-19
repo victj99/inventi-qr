@@ -1,0 +1,53 @@
+<dialog #dialog (cancel)="dismissed.emit()" aria-labelledby="scanner-title">
+  <div class="modal-heading">
+    <div>
+      <span class="eyebrow">Lectura de equipos</span>
+      <h2 id="scanner-title">Escanear código QR</h2>
+    </div>
+    <button class="btn btn-square btn-sm icon-button" aria-label="Cerrar escáner" (click)="dismissed.emit()">
+      <ui-icon name="close" />
+    </button>
+  </div>
+  <p class="muted">Coloca el código QR frente a la cámara.</p>
+
+  <div class="scanner-container">
+    <div id="qr-reader" class="camera-frame" [class.camera-active]="running()"></div>
+    @if (!running()) {
+      <div class="camera-placeholder">
+        <ui-icon name="camera" />
+        <p>Cámara desactivada</p>
+      </div>
+    }
+  </div>
+
+  @if (message()) {
+    <p role="status" class="notice alert alert-warning">{{ message() }}</p>
+  }
+  @if (cameras().length > 1) {
+    <label>
+      Cámara
+      <select [ngModel]="cameraId()" (ngModelChange)="changeCamera($event)">
+        @for (camera of cameras(); track camera.id) {
+          <option [value]="camera.id">{{ camera.label || 'Cámara' }}</option>
+        }
+      </select>
+    </label>
+  }
+  <div class="modal-actions">
+    <button class="btn btn-primary" (click)="running() ? stop() : start()" [disabled]="busy()">
+      <ui-icon name="camera" />{{
+        busy() ? 'Preparando…' : running() ? 'Apagar cámara' : 'Activar cámara'
+      }}
+    </button>
+    <label class="btn btn-outline file-button">
+      Leer una imagen QR
+      <input
+        type="file"
+        accept="image/*"
+        (change)="readImage($event)"
+        [disabled]="busy()"
+      />
+    </label>
+  </div>
+  <p class="small muted">No se graba video.</p>
+</dialog>

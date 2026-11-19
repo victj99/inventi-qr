@@ -1,0 +1,312 @@
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">Auditoría guiada</span>
+    <h1>
+      {{
+        s.auditoria()
+          ? 'Auditoría de ' + s.auditoria()!.ubicacion
+          : 'Auditoría de inventario'
+      }}
+    </h1>
+  </div>
+  @if (s.auditoria()) {
+    <span class="badge badge-neutral"><i class="status-dot"></i>En curso</span>
+  }
+</div>
+@if (!s.auditoria()) {
+  <section class="panel card card-body bg-base-100 border border-base-300 shadow-card preparation">
+    <div>
+      <span class="device-icon large"><ui-icon name="scan" /></span>
+      <h2>Preparar auditoría</h2>
+      <p>
+        Elige la ubicación: se fija la lista de equipos esperados al iniciar. Las lecturas se guardan en este dispositivo y se sincronizan al haber conexión.
+      </p>
+      <label
+        >Ubicación
+        <select class="select" [ngModel]="ubicacion()" (ngModelChange)="ubicacion.set($event)">
+          <option value="" disabled>Elige una ubicación</option>
+          @for (u of ubicaciones(); track u) {
+            <option>{{ u }}</option>
+          }
+        </select>
+      </label>
+      <button
+        class="btn btn-primary"
+        (click)="iniciar()"
+        [disabled]="s.busy() || !ubicacion() || s.offline()"
+      >
+        <ui-icon name="play" />Iniciar auditoría
+      </button>
+      @if (s.offline()) {
+        <p class="small muted">Necesitas conexión para preparar la auditoría.</p>
+      }
+    </div>
+    <div class="preparation-list">
+      <h3>Equipos esperados en {{ ubicacion() || 'la ubicación' }}</h3>
+      @if (esperadosPreview().length) {
+        @for (a of esperadosPreview(); track a.id) {
+          <div>
+            <ui-icon [name]="icon(a.tipo)" /><span
+              >{{ nombre(a) }}</span
+            ><small>{{ a.codigo }}</small>
+          </div>
+        }
+      } @else {
+        <div class="empty-state compact">
+          <ui-icon name="scan" />
+          <p>Elige una ubicación para ver los equipos que se auditarán.</p>
+        </div>
+      }
+    </div>
+  </section>
+  @if (s.auditorias().length) {
+    <section class="panel card card-body bg-base-100 border border-base-300 shadow-card">
+      <div class="section-heading"><h2>Auditorías anteriores</h2></div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Ubicación</th>
+              <th>Inicio</th>
+              <th>Estado</th>
+              <th>Lecturas</th>
+              <th>Reporte</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (a of s.auditorias(); track a.id) {
+              <tr>
+                <td>{{ a.ubicacion }}</td>
+                <td>{{ a.inicio | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>
+                  <span
+                    [class]="'badge pill ' + (a.estado === 'cerrada' ? 'green' : 'amber')"
+                    >{{ humano(a.estado) }}</span
+                  >
+                </td>
+                <td>{{ (a.lecturas ?? []).length }}</td>
+                <td>
+                  <button class="btn btn-outline" (click)="pdf(a.id, a.ubicacion)">
+                    <ui-icon name="download" />PDF
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+} @else {
+  <div class="metric-strip audit-metrics">
+    <div>
+      <span>Verificados</span
+      ><strong
+        >{{ s.totales().expectedFound.length
+        }}<small> de {{ s.auditoria()!.esperados.length }}</small></strong
+      >
+    </div>
+    <div>
+      <span>Por verificar</span><strong>{{ s.totales().missing.length }}</strong>
+    </div>
+    <div>
+      <span>Otra ubicación</span
+      ><strong>{{ s.totales().unexpected.length }}</strong>
+    </div>
+    <div>
+      <span>Pendientes de confirmar</span><strong>{{ s.totales().pending }}</strong>
+    </div>
+  </div>
+  <div class="audit-workspace">
+    <section class="panel card card-body bg-base-100 border border-base-300 shadow-card scanning-panel">
+      <div class="section-heading">
+        <h2>Registrar lectura</h2>
+        <ui-icon name="scan" />
+      </div>
+      <button
+        class="btn btn-primary btn-block"
+        (click)="scanner.set(true)"
+        [disabled]="s.busy()"
+      >
+        <ui-icon name="camera" />Escanear con cámara
+      </button>
+      <div class="or-divider"><span>o escribe el código</span></div>
+      <form (ngSubmit)="manual()">
+        <label for="asset-code">Código del equipo</label>
+        <div class="input-action">
+          <input class="input"
+            id="asset-code"
+            name="code"
+            placeholder="TI-0001"
+            [(ngModel)]="code"
+            autocomplete="off"
+          />
+          <button
+            class="btn btn-square btn-sm icon-button"
+            aria-label="Registrar código"
+            type="submit"
+            [disabled]="!code.trim() || s.busy()"
+          >
+            <ui-icon name="arrow" />
+          </button>
+        </div>
+      </form>
+      @if (pendientes().length) {
+        <div class="quick-codes">
+          <span class="small muted">O elige un equipo pendiente</span>
+          <div class="chip-row">
+            @for (a of pendientes().slice(0, 6); track a.id) {
+              <button class="chip" type="button" (click)="s.scan(a.codigo)">
+                {{ a.codigo }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </section>
+    <section class="panel card card-body bg-base-100 border border-base-300 shadow-card reading-panel">
+      <div class="section-heading">
+        <h2>Equipos de la auditoría</h2>
+        <span class="small muted">Guardado local</span>
+      </div>
+      <div class="audit-progress">
+        <div
+          [style.width.%]="
+            s.auditoria()!.esperados.length
+              ? (s.totales().expectedFound.length /
+                  s.auditoria()!.esperados.length) *
+                100
+              : 0
+          "
+        ></div>
+      </div>
+      <div class="reading-list">
+        @for (a of esperados(); track a.id) {
+          <div class="reading-row" [class.read]="lectura(a.id)">
+            <span class="reading-check">
+              @if (lectura(a.id)) {
+                <ui-icon name="check" />
+              } @else {
+                <ui-icon [name]="icon(a.tipo)" />
+              }
+            </span>
+            <div>
+              <a [routerLink]="['/activo', a.id]" class="asset-name">{{
+                nombre(a)
+              }}</a>
+              <span class="small muted">{{ a.codigo }}</span>
+            </div>
+            <span class="reading-state">{{
+              lectura(a.id)
+                ? lectura(a.id)!.sincronizada
+                  ? 'Confirmado'
+                  : 'Guardado · pendiente'
+                : 'Por verificar'
+            }}</span>
+          </div>
+        }
+        @for (r of s.totales().unexpected; track r.activoId) {
+          <div class="reading-row unexpected">
+            <span class="reading-check"><ui-icon name="warn" /></span>
+            <div>
+              <strong>{{ nombre(s.asset(r.activoId)!) }}</strong>
+              <span class="small muted"
+                >{{ s.asset(r.activoId)?.codigo }} ·
+                {{ s.asset(r.activoId)?.ubicacion }}</span
+              >
+            </div>
+            <span class="reading-state">Otra ubicación</span>
+          </div>
+        }
+      </div>
+    </section>
+  </div>
+  <section class="sync-bar">
+    <div>
+      <ui-icon [name]="s.offline() ? 'offline' : 'link'" />
+      <div>
+        <strong
+          >{{ s.totales().pending }}
+          {{
+            s.totales().pending === 1
+              ? 'lectura pendiente'
+              : 'lecturas pendientes'
+          }}
+          de confirmar</strong
+        >
+        <p class="small muted">
+          {{
+            s.offline()
+              ? 'Lecturas guardadas sin conexión; se enviarán al reconectar.'
+              : 'Las lecturas se confirman en el servidor.'
+          }}
+        </p>
+      </div>
+    </div>
+    <button
+      class="btn btn-outline"
+      (click)="s.sincronizar()"
+      [disabled]="s.busy() || !s.totales().pending || s.offline()"
+    >
+      <ui-icon name="refresh" />Confirmar lecturas
+    </button>
+  </section>
+  <section class="panel card card-body bg-base-100 border border-base-300 shadow-card reconciliation">
+    <div>
+      <h2>Revisar y cerrar</h2>
+      <p class="muted">
+        {{ s.totales().missing.length }} por verificar y
+        {{ s.totales().unexpected.length }} de otra ubicación.
+      </p>
+    </div>
+    <label class="checkbox-label">
+      <input class="checkbox" type="checkbox" [(ngModel)]="reviewed" />Revisé las diferencias de
+      la auditoría.
+    </label>
+    <button
+      class="btn btn-primary"
+      (click)="s.cerrarAuditoria()"
+      [disabled]="
+        !reviewed || s.totales().pending > 0 || s.busy() || s.offline()
+      "
+    >
+      Cerrar auditoría<ui-icon name="check" />
+    </button>
+    @if (s.totales().pending) {
+      <span class="small muted block"
+        >Confirma primero las lecturas pendientes.</span
+      >
+    }
+    <button class="btn btn-outline" (click)="confirmandoDescarte.set(true)">
+      Descartar auditoría local
+    </button>
+  </section>
+}
+@if (scanner()) {
+  <qr-scanner (dismissed)="scanner.set(false)" (decoded)="scanned($event)" />
+}
+@if (confirmandoDescarte()) {
+  <ui-modal labelledBy="descarte-title" (dismissed)="confirmandoDescarte.set(false)">
+    <div class="modal-heading">
+      <h2 id="descarte-title">Descartar auditoría local</h2>
+      <button
+        autofocus
+        class="btn btn-square btn-sm icon-button"
+        aria-label="Cerrar"
+        (click)="confirmandoDescarte.set(false)"
+      >
+        <ui-icon name="close" />
+      </button>
+    </div>
+    <p>
+      ¿Descartar la auditoría de {{ s.auditoria()!.ubicacion }}? Se perderán
+      {{ (s.auditoria()!.lecturas ?? []).length }} lecturas guardadas en este dispositivo.
+    </p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" type="button" (click)="confirmandoDescarte.set(false)">
+        Cancelar
+      </button>
+      <button class="btn btn-outline btn-error" type="button" (click)="confirmarDescarte()">Descartar</button>
+    </div>
+  </ui-modal>
+}

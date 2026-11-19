@@ -1,0 +1,238 @@
+:host {
+  display: block;
+}
+:host > .panel + .panel,
+:host > .dashboard-bottom + .panel {
+  margin-top: 20px;
+}
+.dashboard-bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(300px, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+.attention-row {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 15px 24px;
+  border-top: 1px solid #edf1f5;
+  transition: background-color 0.15s ease;
+}
+.attention-row:hover {
+  background: #f8fbfc;
+}
+.attention-row:last-child {
+  padding-bottom: 18px;
+}
+.attention-main {
+  flex: 1;
+  min-width: 120px;
+}
+.attention-main strong {
+  display: block;
+  font-size: 12.5px;
+}
+.attention-main span {
+  display: block;
+  margin-top: 2px;
+}
+.attention-row > ui-icon {
+  width: 16px;
+  height: 16px;
+  color: #9aabba;
+}
+.attention-reason {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  max-width: 245px;
+  line-height: 1.5;
+}
+.attention-reason.red {
+  color: var(--red);
+}
+.attention-reason.amber {
+  color: var(--amber);
+}
+.attention-reason.unknown {
+  color: #6e8090;
+}
+.distribution {
+  padding-bottom: 20px;
+  align-self: start;
+}
+.distribution .section-heading {
+  padding-bottom: 8px;
+}
+.distribution > .subhead,
+.distribution > .dist-row,
+.distribution > .estado-list {
+  margin-left: 24px;
+  margin-right: 24px;
+}
+.dist-row {
+  margin-bottom: 13px;
+}
+.dist-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12.5px;
+  margin-bottom: 6px;
+}
+.dist-top strong {
+  font-variant-numeric: tabular-nums;
+}
+.dist-track {
+  height: 6px;
+  background: #eef3f7;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.dist-track i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--teal), #43b9b2);
+  transition: width 0.3s ease;
+}
+.estado-row {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 0;
+  border-bottom: 1px solid #edf1f5;
+  font-size: 12.5px;
+}
+.estado-row:last-child {
+  border-bottom: 0;
+}
+.score-cell {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.score-track {
+  display: block;
+  width: 58px;
+  height: 5px;
+  background: #eef3f7;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.score-track i {
+  display: block;
+  height: 100%;
+}
+
+/* --- Charts & Efficiency Styles --- */
+.charts-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+.chart-panel {
+  padding: 20px;
+}
+.chart-wrapper {
+  position: relative;
+  padding-top: 10px;
+}
+.chart-wrapper.wide {
+  padding: 15px 0 20px 0;
+}
+.audit-efficiency-panel {
+  margin-bottom: 20px;
+}
+.efficiency-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+  padding-top: 6px;
+  margin-left: 24px;
+  margin-right: 24px;
+}
+.stat-card {
+  background: #f7fafc;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+}
+.stat-card.highlight {
+  background: var(--green-050);
+  border-color: #c3e6cb;
+}
+.stat-label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.stat-val {
+  display: block;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 4px 0 2px 0;
+}
+.stat-val.red {
+  color: var(--red);
+}
+.stat-val.teal {
+  color: var(--teal);
+}
+.stat-val.green {
+  color: var(--green);
+}
+.stat-card .stat-desc {
+  display: block;
+  font-size: 12px; /* = .75rem de daisyUI, sin encogerlo con el root de 14.5px */
+  color: var(--muted);
+  /* daisyUI añade `white-space: nowrap` y `grid-column-start: 1` a .stat-desc */
+  white-space: normal;
+  grid-column-start: auto;
+}
+.text-success {
+  color: var(--green);
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
+  .efficiency-stats {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 1100px) {
+  .dashboard-bottom {
+    grid-template-columns: minmax(0, 1.5fr) minmax(270px, 1fr);
+  }
+}
+@media (max-width: 900px) {
+  .dashboard-bottom {
+    grid-template-columns: 1fr;
+  }
+  .distribution {
+    align-self: stretch;
+  }
+}
+@media (max-width: 760px) {
+  .attention-row {
+    flex-wrap: wrap;
+    padding: 14px 16px;
+  }
+  .attention-reason {
+    max-width: none;
+    width: 100%;
+    padding-left: 53px;
+  }
+}

@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: inventario-ti
+  web:
+    resources:
+      static-locations: ${STATIC_LOCATIONS:classpath:/static/}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        default_schema: ${DB_SCHEMA:inventario_ti}
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:55432/sade_validation?currentSchema=inventario_ti}
+    username: ${SPRING_DATASOURCE_USERNAME:sade}
+    password: ${SPRING_DATASOURCE_PASSWORD:sade_local_validation}
+server:
+  port: ${PORT:8090}
+  # Railway termina TLS y entrega X-Forwarded-*; el framework los aplica (IP real en rate limit).
+  forward-headers-strategy: framework
+app:
+  # Sin valor por defecto: si JWT_SECRET falta o es débil (menos de 32 bytes) el arranque falla.
+  jwt-secret: ${JWT_SECRET}
+  seed: ${SEED:false}

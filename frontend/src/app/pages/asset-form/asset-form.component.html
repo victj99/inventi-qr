@@ -1,0 +1,83 @@
+<a routerLink="/inventario" class="text-link back-link"
+  ><ui-icon name="back" />Volver al inventario</a
+>
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">{{ editando() ? 'Editar activo' : 'Nuevo activo' }}</span>
+    <h1>{{ editando() ? model.codigo : 'Registrar equipo' }}</h1>
+  </div>
+</div>
+<section class="panel card card-body bg-base-100 border border-base-300 shadow-card">
+  <form class="asset-form" (ngSubmit)="guardar()">
+    <div class="form-grid">
+      <label
+        >Código<input class="input"
+          name="codigo"
+          [(ngModel)]="model.codigo"
+          autocomplete="off"
+          placeholder="Autogenerado si se deja vacío"
+      /></label>
+      <label
+        >Tipo *
+        <select class="select" name="tipo" [(ngModel)]="model.tipo" required>
+          @for (t of tipos(); track t) {
+            <option [value]="t">{{ t }}</option>
+          }
+        </select>
+      </label>
+      <label>Marca<input class="input" name="marca" [(ngModel)]="model.marca" autocomplete="off" /></label>
+      <label>Modelo<input class="input" name="modelo" [(ngModel)]="model.modelo" autocomplete="off" /></label>
+      <label>Serie<input class="input" name="serie" [(ngModel)]="model.serie" autocomplete="off" /></label>
+      <ui-autocomplete
+        label="Ubicación"
+        name="ubicacion"
+        header="Ubicaciones registradas"
+        nuevaEtiqueta="ubicación nueva"
+        required
+        [suggestions]="ubicaciones()"
+        [(value)]="model.ubicacion"
+      />
+      <label
+        >Responsable<input class="input"
+          name="responsable"
+          [(ngModel)]="model.responsable"
+          autocomplete="off"
+      /></label>
+      <label>Fecha de compra<input class="input" type="date" name="compra" [(ngModel)]="model.compra" /></label>
+      <label
+        >Fin de garantía<input class="input" type="date" name="garantiaHasta" [(ngModel)]="model.garantiaHasta"
+      /></label>
+      @if (editando()) {
+        <label
+          >Estado operativo
+          <select class="select" name="estadoOp" [(ngModel)]="model.estadoOp">
+            @for (e of estadosOp; track e) {
+              <option [value]="e">{{ humano(e) }}</option>
+            }
+          </select>
+        </label>
+        <label
+          >Asignación
+          <select class="select" name="asignacion" [(ngModel)]="model.asignacion">
+            @for (a of asignaciones; track a) {
+              <option [value]="a">{{ humano(a) }}</option>
+            }
+          </select>
+        </label>
+      }
+    </div>
+    @if (error()) {
+      <p class="error-banner alert alert-error" role="alert">{{ error() }}</p>
+    }
+    <div class="modal-actions">
+      <button
+        class="btn btn-primary"
+        type="submit"
+        [disabled]="busy() || !model.tipo || !model.ubicacion"
+      >
+        {{ editando() ? 'Guardar cambios' : 'Registrar activo' }}
+      </button>
+      <a routerLink="/inventario" class="btn btn-outline">Cancelar</a>
+    </div>
+  </form>
+</section>

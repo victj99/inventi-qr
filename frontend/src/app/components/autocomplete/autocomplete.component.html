@@ -1,0 +1,63 @@
+<div class="ac">
+  <label [for]="uid + '-campo'">{{ label() }}{{ required() ? ' *' : '' }}</label>
+  <input
+    class="input"
+    [id]="uid + '-campo'"
+    type="text"
+    [name]="name()"
+    [value]="value()"
+    [placeholder]="placeholder()"
+    [attr.required]="required() ? '' : null"
+    autocomplete="off"
+    spellcheck="false"
+    role="combobox"
+    aria-autocomplete="list"
+    [attr.aria-expanded]="abierta()"
+    [attr.aria-controls]="abierta() ? uid : null"
+    [attr.aria-activedescendant]="activa() >= 0 ? uid + '-op-' + activa() : null"
+    (focus)="abrir()"
+    (input)="escribir($any($event.target).value)"
+    (keydown)="teclas($event)"
+  />
+</div>
+@if (abierta()) {
+  <div
+    class="ac-panel"
+    [id]="uid"
+    role="listbox"
+    [attr.aria-label]="header()"
+    [class.arriba]="pos().arriba"
+    [style.left.px]="pos().left"
+    [style.top.px]="pos().top"
+    [style.width.px]="pos().width"
+  >
+    <div class="ac-head">
+      <span>{{ header() }}</span>
+      <span class="ac-cuenta">{{ filtradas().length }}</span>
+    </div>
+    @if (filtradas().length) {
+      <div class="ac-lista">
+        @for (u of filtradas(); track u; let i = $index) {
+          <button
+            type="button"
+            role="option"
+            class="ac-op"
+            [id]="uid + '-op-' + i"
+            [attr.data-i]="i"
+            [class.activa]="i === activa()"
+            [attr.aria-selected]="i === activa()"
+            (mousedown)="$event.preventDefault()"
+            (click)="elegir(u)"
+          >
+            {{ u }}
+          </button>
+        }
+      </div>
+    } @else {
+      <p class="ac-vacia">Sin coincidencias en {{ header().toLowerCase() }}.</p>
+    }
+    @if (nueva()) {
+      <p class="ac-nueva">Se creará «{{ nueva() }}» como {{ nuevaEtiqueta() }}.</p>
+    }
+  </div>
+}

@@ -1,0 +1,11 @@
+# Dependencias y artefactos de build
+node_modules/
+dist/
+.angular/
+backend/target/
+*.log
+
+# Sistema / IDE / secretos
+.DS_Store
+~$*
+.env

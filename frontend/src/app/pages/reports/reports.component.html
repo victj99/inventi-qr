@@ -1,0 +1,119 @@
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">Inteligencia y reportes</span>
+    <h1>Centro de reportes y analíticas</h1>
+    <p class="muted">
+      Monitoreo del ciclo de vida, salud de garantías y descarga de reportes oficiales de TI.
+    </p>
+  </div>
+</div>
+
+<!-- KPI Strip de Analíticas -->
+<div class="kpi-grid">
+  <article class="kpi kpi-blue stat bg-base-100 border border-base-300 shadow-card">
+    <span class="kpi-icon stat-figure"><ui-icon name="check" /></span>
+    <div class="kpi-body">
+      <span class="kpi-label stat-title">Garantías vigentes</span>
+      <strong class="stat-value">{{ porcentajeGarantiaVigente() }}%</strong>
+      <small class="stat-desc">Del parque tecnológico registrado</small>
+    </div>
+  </article>
+  <article class="kpi kpi-teal stat bg-base-100 border border-base-300 shadow-card">
+    <span class="kpi-icon stat-figure"><ui-icon name="box" /></span>
+    <div class="kpi-body">
+      <span class="kpi-label stat-title">Inversión en mantenimientos</span>
+      <strong class="stat-value">S/ {{ totalInversionMantenimiento() | number: '1.2-2' }}</strong>
+      <small class="stat-desc">Gasto acumulado en reparaciones</small>
+    </div>
+  </article>
+  <article class="kpi kpi-amber stat bg-base-100 border border-base-300 shadow-card">
+    <span class="kpi-icon stat-figure"><ui-icon name="warn" /></span>
+    <div class="kpi-body">
+      <span class="kpi-label stat-title">Fallas atendidas</span>
+      <strong class="stat-value">{{ totalFallas() }}</strong>
+      <small class="stat-desc">Incidencias técnicas reportadas</small>
+    </div>
+  </article>
+  <article class="kpi kpi-amber stat bg-base-100 border border-base-300 shadow-card">
+    <span class="kpi-icon stat-figure"><ui-icon name="clock" /></span>
+    <div class="kpi-body">
+      <span class="kpi-label stat-title">Garantías por vencer</span>
+      <strong class="stat-value">{{ garantiasPorVencer() }}</strong>
+      <small class="stat-desc">Vencen en los próximos 30 días</small>
+    </div>
+  </article>
+</div>
+
+<!-- Fila de Gráficos de Analíticas (BI) -->
+<div class="charts-row">
+  <section class="panel card card-body bg-base-100 border border-base-300 shadow-card chart-panel">
+    <div class="section-heading">
+      <div>
+        <h2>Salud del parque: Estado de garantías</h2>
+        <p class="small muted">Distribución de vigencia de soporte oficial de fábrica.</p>
+      </div>
+      <span class="badge badge-success">{{ porcentajeGarantiaVigente() }}% vigentes</span>
+    </div>
+    <div class="chart-wrapper">
+      <app-base-chart
+        type="doughnut"
+        [data]="garantiasChartData()"
+        [options]="garantiasChartOptions"
+        height="220px"
+      />
+    </div>
+  </section>
+
+  <section class="panel card card-body bg-base-100 border border-base-300 shadow-card chart-panel">
+    <div class="section-heading">
+      <div>
+        <h2>Inversión en mantenimiento por categoría</h2>
+        <p class="small muted">Gasto acumulado en reparaciones y servicios técnicos (S/).</p>
+      </div>
+      <span class="badge badge-info">S/ {{ totalInversionMantenimiento() }} total</span>
+    </div>
+    <div class="chart-wrapper">
+      <app-base-chart
+        type="bar"
+        [data]="costosChartData()"
+        [options]="costosChartOptions"
+        height="220px"
+      />
+    </div>
+  </section>
+</div>
+
+<!-- Sección de Exportación de Reportes Oficiales -->
+<section class="panel card card-body bg-base-100 border border-base-300 shadow-card exports-panel">
+  <div class="section-heading">
+    <div>
+      <h2>Descarga de reportes oficiales</h2>
+      <p class="small muted">
+        Reportes Excel (.xlsx) generados en el servidor, respetando permisos por rol. El PDF de cada
+        auditoría cerrada se descarga desde Auditoría → Auditorías anteriores.
+      </p>
+    </div>
+  </div>
+
+  <div class="report-grid">
+    @for (r of reportes; track r.ruta) {
+      <div class="report-card">
+        <div class="report-card-top">
+          <span class="device-icon"><ui-icon [name]="r.icono" /></span>
+          <span class="badge badge-neutral">{{ r.formato }}</span>
+        </div>
+        <h3>{{ r.titulo }}</h3>
+        <p class="muted small">{{ r.desc }}</p>
+        <button
+          class="btn btn-primary btn-block"
+          (click)="descargar(r)"
+          [disabled]="busy === r.ruta"
+        >
+          <ui-icon name="download" />{{
+            busy === r.ruta ? 'Generando…' : 'Descargar ' + r.formato
+          }}
+        </button>
+      </div>
+    }
+  </div>
+</section>

@@ -1,0 +1,86 @@
+<div class="login-page">
+  <section class="login-brand" aria-label="InvenTI QR">
+    <div class="login-brand-top">
+      <span class="brand-mark xl"><ui-icon name="scan" /></span>
+      <span class="brand-word">inventi<span>Inventario TI</span></span>
+    </div>
+    <div class="login-pitch">
+      <span class="eyebrow light">Inventario · QR · Auditoría</span>
+      <h1>El inventario de TI,<br />siempre al día.</h1>
+      <p>
+        Control centralizado de activos tecnológicos, auditoría en piso con códigos
+        QR y sincronización automática fuera de línea.
+      </p>
+    </div>
+    <p class="login-foot">InvenTI QR · Proyecto universitario</p>
+  </section>
+
+  <section class="login-main">
+    <div class="login-card">
+      <span class="brand-mark lg login-card-mark"><ui-icon name="scan" /></span>
+      <h2>Inicia sesión</h2>
+      <p class="muted login-sub">Usa tu cuenta corporativa para continuar.</p>
+
+      <form (ngSubmit)="entrar()">
+        <label class="field">
+          <span>Correo</span>
+          <input
+            class="input"
+            type="email"
+            name="email"
+            [(ngModel)]="email"
+            required
+            autocomplete="username"
+            aria-label="Correo"
+            placeholder="nombre&#64;inventi.pe"
+          />
+        </label>
+        <label class="field">
+          <span>Contraseña</span>
+          <input
+            class="input"
+            type="password"
+            name="password"
+            [(ngModel)]="password"
+            required
+            autocomplete="current-password"
+            aria-label="Contraseña"
+            placeholder="••••••••"
+          />
+        </label>
+        @if (error()) {
+          <p class="error-banner alert alert-error" role="alert">{{ error() }}</p>
+        }
+        <button
+          class="btn btn-primary btn-block btn-lg"
+          type="submit"
+          [disabled]="busy() || !email || !password"
+        >
+          {{ busy() ? 'Ingresando…' : 'Entrar al inventario' }}
+        </button>
+      </form>
+
+      <p class="small muted">
+        ¿Sin acceso? Solicítalo a TI (<a href="mailto:soporte@inventi.pe">soporte@inventi.pe</a>)
+      </p>
+
+      <div class="login-demo">
+        <span class="login-demo-title">Acceso rápido</span>
+        <div class="demo-chips">
+          @for (d of demo; track d.email) {
+            <button
+              class="demo-chip"
+              type="button"
+              [disabled]="busy()"
+              [title]="d.rol + ' · ' + d.detalle"
+              (click)="entrarDemo(d.email)"
+            >
+              <ui-icon [name]="d.icon" />
+              <span>{{ d.rol }}</span>
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,54 @@
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">Avisos preventivos</span>
+    <h1>Alertas</h1>
+    <p class="muted">
+      @if (list().length === 0) {
+        Ningún equipo requiere atención
+      } @else {
+        {{ list().length }} de {{ s.activos().length }} equipos
+        {{ list().length === 1 ? 'requiere' : 'requieren' }} atención
+      }
+    </p>
+  </div>
+</div>
+<div class="filter-tabs tabs" aria-label="Filtrar alertas">
+  @for (tab of tabs; track tab.value) {
+    <button
+      class="tab"
+      [class.active]="filter() === tab.value"
+      [class.tab-active]="filter() === tab.value"
+      (click)="filter.set(tab.value)"
+      [attr.aria-pressed]="filter() === tab.value"
+    >
+      {{ tab.label }}<span>{{ count(tab.value) }}</span>
+    </button>
+  }
+</div>
+<section class="panel card card-body bg-base-100 border border-base-300 shadow-card alert-list">
+  @for (a of filtered(); track a.id) {
+    <article [class]="'alert alert-item ' + s.atencion(a).level">
+      <span [class]="'alert-symbol ' + s.atencion(a).level">
+        <ui-icon [name]="s.atencion(a).level === 'red' ? 'warn' : 'clock'" />
+      </span>
+      <div class="alert-body">
+        <span [class]="'badge pill ' + s.atencion(a).level">{{
+          s.atencion(a).label
+        }}</span>
+        <h2>{{ nombre(a) }}</h2>
+        <p class="small muted">{{ a.codigo }} · {{ a.ubicacion }}</p>
+        @for (reason of s.atencion(a).reasons; track reason) {
+          <p>{{ reason }}.</p>
+        }
+      </div>
+      <a class="btn btn-outline" [routerLink]="['/activo', a.id]"
+        >Revisar ficha<ui-icon name="arrow"
+      /></a>
+    </article>
+  } @empty {
+    <div class="empty-state">
+      <ui-icon name="check" />
+      <h2>Sin equipos en esta categoría</h2>
+    </div>
+  }
+</section>

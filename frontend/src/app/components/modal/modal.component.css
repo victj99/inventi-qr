@@ -1,0 +1,40 @@
+/* daisyUI 4 reserva el <dialog class="modal"> para la capa a pantalla completa
+   y .modal-box para la tarjeta. La mecánica (showModal, cancel, clic fuera) no
+   cambia: solo se le da al panel las medidas que antes tenía el propio diálogo. */
+:host dialog.modal {
+  border: 0;
+  box-shadow: none;
+}
+
+.modal-box {
+  width: min(480px, calc(100% - 32px));
+  max-width: none;
+  max-height: 90vh;
+  padding: 26px;
+  border: 1px solid var(--line-strong);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: var(--shadow-lg);
+}
+
+/* Hoja inferior a pantalla completa (móvil). */
+dialog.sheet {
+  align-items: end;
+}
+
+dialog.sheet .modal-box {
+  width: 100%;
+  max-width: 560px;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  border-radius: 20px 20px 0 0;
+  border-bottom: 0;
+  max-height: 88vh;
+  animation: sheet-in 0.2s ease-out;
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+}

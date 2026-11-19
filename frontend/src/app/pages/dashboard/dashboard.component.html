@@ -1,0 +1,287 @@
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">Panel de control</span>
+    <h1>Resumen del inventario</h1>
+    <p class="muted">InvenTI QR · {{ fechaTexto }}</p>
+  </div>
+  @if (puedeAuditar) {
+    <a class="btn btn-primary" routerLink="/auditoria">
+      <ui-icon name="scan" />Nueva auditoría
+    </a>
+  }
+</div>
+
+<div class="kpi-grid">
+  <article class="kpi kpi-teal stat bg-base-100 border border-base-300 shadow-card">
+    <span class="kpi-icon stat-figure"><ui-icon name="box" /></span>
+    <div class="kpi-body">
+      <span class="kpi-label stat-title">Activos registrados</span>
+      <strong class="stat-value">{{ s.activos().length }}</strong>
+      <small class="stat-desc">{{ tasaOperatividad() }}% operativos · {{ ubicaciones().length }} ubicaciones</small>
+    </div>
+  </article>
+  <article class="kpi kpi-blue stat bg-base-100 border border-base-300 shadow-card">
+    <span class="kpi-icon stat-figure"><ui-icon name="check" /></span>
+    <div class="kpi-body">
+      <span class="kpi-label stat-title">Asignados</span>
+      <strong class="stat-value">{{ asignados() }}</strong>
+      <small class="stat-desc">{{ disponibles() }} disponibles para asignación</small>
+    </div>
+  </article>
+  <article
+    class="kpi stat bg-base-100 border border-base-300 shadow-card"
+    [class.kpi-red]="alertasAltas()"
+    [class.kpi-amber]="!alertasAltas() && alerts().length"
+  >
+    <span class="kpi-icon stat-figure"><ui-icon name="bell" /></span>
+    <div class="kpi-body">
+      <span class="kpi-label stat-title">Requieren atención</span>
+      <strong class="stat-value">{{ alerts().length }}</strong>
+      <small class="stat-desc">{{ alertasAltas() }} prioritarias · {{ alertasMedias() }} por revisar</small>
+    </div>
+  </article>
+  <article class="kpi kpi-green stat bg-base-100 border border-base-300 shadow-card">
+    <span class="kpi-icon stat-figure"><ui-icon name="scan" /></span>
+    <div class="kpi-body">
+      <span class="kpi-label stat-title">Auditorías cerradas</span>
+      <strong class="stat-value">{{ cerradas() }}</strong>
+      <small class="stat-desc">{{
+        ultimaAuditoria()
+          ? 'Última: ' + (ultimaAuditoria()!.fin | date: 'dd/MM/yyyy')
+          : 'Aún sin cierres'
+      }}</small>
+    </div>
+  </article>
+</div>
+
+<!-- ANALÍTICAS VISUALES: Fila de Gráficos Operativos -->
+<div class="charts-row">
+  <section class="panel card card-body bg-base-100 border border-base-300 shadow-card chart-panel">
+    <div class="section-heading">
+      <div>
+        <h2>Estado operativo del inventario</h2>
+        <p class="small muted">Distribución en tiempo real de la operatividad de los activos.</p>
+      </div>
+      <span class="badge badge-success">{{ tasaOperatividad() }}% operativo</span>
+    </div>
+    <div class="chart-wrapper">
+      <app-base-chart
+        type="doughnut"
+        [data]="estadoChartData()"
+        [options]="estadoChartOptions"
+        height="220px"
+      />
+    </div>
+  </section>
+
+  <section class="panel card card-body bg-base-100 border border-base-300 shadow-card chart-panel">
+    <div class="section-heading">
+      <div>
+        <h2>Parque informático por categoría</h2>
+        <p class="small muted">Tipos de equipamiento registrados en la empresa.</p>
+      </div>
+      <span class="badge badge-neutral">{{ s.activos().length }} equipos</span>
+    </div>
+    <div class="chart-wrapper">
+      <app-base-chart
+        type="bar"
+        [data]="tipoChartData()"
+        [options]="tipoChartOptions"
+        height="220px"
+      />
+    </div>
+  </section>
+</div>
+
+<!-- AUDITORÍA Y EFICIENCIA: Meta del -60% -->
+@if (puedePanel) {
+  <section class="panel card card-body bg-base-100 border border-base-300 shadow-card audit-efficiency-panel">
+    <div class="section-heading">
+      <div>
+        <h2>Evolución de tiempos de auditoría (Objetivo: −60 %)</h2>
+        <p class="small muted">
+          Comparativa entre la auditoría tradicional (línea base manual) y las auditorías asistidas por escaneo QR móvil.
+        </p>
+      </div>
+      @if (tiempos().length) {
+        @if (sobreLineaBase()) {
+          <span class="badge badge-neutral">Promedio por encima de la línea base</span>
+        } @else {
+          <span
+            class="badge badge-success"
+            title="Objetivo interno: reducir al menos 60 % el tiempo frente a la auditoría manual"
+          >
+            Reducción lograda: −{{ reduccionPorcentaje() }} %
+          </span>
+        }
+      }
+    </div>
+
+    @if (tiempos().length) {
+      <div class="efficiency-stats">
+        <div class="stat-card">
+          <span class="stat-label">Línea base (Excel)</span>
+          <strong class="stat-val red">{{ lineaBase }} min</strong>
+          <span class="stat-desc">Auditoría manual papel/Excel</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Promedio con QR</span>
+          <strong class="stat-val teal">{{ promedioMinutos() }} min</strong>
+          <span class="stat-desc">Sobre {{ tiempos().length }} auditorías cerradas</span>
+        </div>
+        <div class="stat-card highlight">
+          <span class="stat-label">Reducción lograda</span>
+          <strong class="stat-val green">−{{ reduccionPorcentaje() }} %</strong>
+          <span class="stat-desc">{{ reduccionPorcentaje() >= 60 ? 'Objetivo de −60 % cumplido' : 'Objetivo: al menos −60 %' }}</span>
+        </div>
+      </div>
+
+      <div class="chart-wrapper wide">
+        <app-base-chart
+          type="bar"
+          [data]="tiemposChartData()"
+          [options]="tiemposChartOptions"
+          height="230px"
+        />
+      </div>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Ubicación auditada</th>
+              <th>Fecha de ejecución</th>
+              <th>Duración registrada</th>
+              <th>Lecturas confirmadas</th>
+              <th>Ahorro de tiempo</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (t of tiempos(); track t.id) {
+              <tr>
+                <td><strong>{{ t.ubicacion }}</strong></td>
+                <td>{{ t.fin | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td><span class="badge badge-primary">{{ t.minutos }} min</span></td>
+                <td>{{ t.lecturas }} equipos verificados</td>
+                <td [class.text-success]="t.minutos < lineaBase">{{ ahorro(t.minutos) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="empty-state compact">
+        <ui-icon name="clock" />
+        <h3>Aún no hay auditorías cerradas</h3>
+        <p>Inicia y cierra una auditoría para medir la reducción del 60 % frente a la línea base.</p>
+      </div>
+    }
+  </section>
+}
+
+<div class="dashboard-bottom">
+  <section class="panel card card-body bg-base-100 border border-base-300 shadow-card alerts-panel">
+    <div class="section-heading">
+      <div>
+        <h2>Alertas pendientes</h2>
+        <p class="small muted">Equipos con fallas, garantías o mantenimientos por atender.</p>
+      </div>
+      <a routerLink="/alertas" class="text-link">Ver todas<ui-icon name="arrow" /></a>
+    </div>
+    <div class="attention-list">
+      @for (a of alerts().slice(0, 4); track a.id) {
+        <a [routerLink]="['/activo', a.id]" class="attention-row">
+          <span class="device-icon"><ui-icon [name]="icon(a.tipo)" /></span>
+          <div class="attention-main">
+            <strong>{{ nombre(a) }}</strong>
+            <span class="muted small">{{ a.codigo }} · {{ a.ubicacion }}</span>
+          </div>
+          <span [class]="'attention-reason ' + s.atencion(a).level">
+            <i class="status-dot"></i>{{ s.atencion(a).reasons[0] }}
+          </span>
+          <ui-icon name="arrow" />
+        </a>
+      } @empty {
+        <div class="empty-state">
+          <ui-icon name="check" />
+          <h3>Sin alertas pendientes</h3>
+          <p>Todo el inventario está al día.</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <aside class="panel card card-body bg-base-100 border border-base-300 shadow-card distribution">
+    <div class="section-heading"><h2>Distribución</h2></div>
+    <h3 class="subhead">Equipos por ubicación</h3>
+    @for (u of ubicaciones(); track u.nombre) {
+      <div class="dist-row">
+        <div class="dist-top">
+          <span>{{ u.nombre }}</span><strong>{{ u.total }}</strong>
+        </div>
+        <div class="dist-track"><i [style.width.%]="(u.total / maxUbic()) * 100"></i></div>
+      </div>
+    }
+    <h3 class="subhead spaced">Estado operativo</h3>
+    <div class="estado-list">
+      @for (e of estados(); track e.nombre) {
+        <div class="estado-row">
+          <span [class]="'status-dot ' + tonoEstado(e.nombre)"></span>
+          <span>{{ humano(e.nombre) }}</span>
+          <strong>{{ e.total }}</strong>
+        </div>
+      }
+    </div>
+  </aside>
+</div>
+
+@if (puedePanel) {
+  <section class="panel card card-body bg-base-100 border border-base-300 shadow-card">
+    <div class="section-heading">
+      <div>
+        <h2>Prioridad de renovación</h2>
+        <p class="small muted">
+          Evaluación del ciclo de vida y obsolescencia tecnológica por activo.
+        </p>
+      </div>
+      <span class="badge badge-neutral">Top {{ prioridad().slice(0, 5).length }}</span>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Activo</th>
+            <th>Nivel</th>
+            <th>Puntaje</th>
+            <th>Factores determinantes</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of prioridad().slice(0, 5); track p.activoId) {
+            <tr>
+              <td>
+                <a [routerLink]="['/activo', p.activoId]" class="asset-name">{{ p.codigo }}</a>
+              </td>
+              <td>
+                <span
+                  [class]="
+                    'badge pill ' +
+                    (p.nivel === 'alta' ? 'red' : p.nivel === 'media' ? 'amber' : 'green')
+                  "
+                  >{{ humano(p.nivel) }}</span
+                >
+              </td>
+              <td>
+                <div class="score-cell">
+                  <strong>{{ p.score }}</strong>
+                  <span class="score-track"><i [style.width.%]="(p.score / prioridadMax) * 100"></i></span>
+                </div>
+              </td>
+              <td class="small muted">{{ p.factores.join(' · ') }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}

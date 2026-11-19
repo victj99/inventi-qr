@@ -1,0 +1,95 @@
+:host {
+  display: block;
+}
+
+dialog {
+  width: min(570px, calc(100% - 32px));
+  padding: 24px;
+  border-radius: var(--radius, 14px);
+  border: 1px solid var(--line, #e1e8ef);
+  box-shadow: var(--shadow-lg, 0 32px 80px -38px rgba(10, 35, 54, 0.45));
+  background: #fff;
+}
+
+.scanner-container {
+  position: relative;
+  width: 100%;
+  margin: 14px 0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.camera-frame {
+  width: 100%;
+  min-height: 280px;
+  max-height: 340px;
+  background: #102a43;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  display: block;
+}
+
+.camera-frame:not(.camera-active) {
+  display: none;
+}
+
+/* Ensure video injected by html5-qrcode scales correctly and fills width */
+#qr-reader {
+  width: 100% !important;
+  border: none !important;
+}
+
+#qr-reader video {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 340px !important;
+  object-fit: cover !important;
+  border-radius: 12px;
+  display: block !important;
+}
+
+#qr-reader img[alt="Info icon"] {
+  display: none;
+}
+
+.camera-placeholder {
+  min-height: 200px;
+  background: #eff4f7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #b1becb;
+  border-radius: 12px;
+  text-align: center;
+  padding: 20px;
+}
+
+.camera-placeholder ui-icon {
+  width: 44px;
+  height: 44px;
+  color: var(--teal, #0b8b96);
+  margin-bottom: 8px;
+}
+
+.file-button {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.file-button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  cursor: pointer;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}

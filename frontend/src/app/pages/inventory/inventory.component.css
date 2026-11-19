@@ -1,0 +1,23 @@
+:host {
+  display: block;
+}
+.table-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.table-caption strong {
+  color: var(--ink-soft);
+  font-size: 12.5px;
+}
+.table-scroll {
+  overflow-x: auto;
+}
+.asset-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
