@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Usuario } from '../models/tipos';
+import { getApiBaseUrl } from '../config/runtime-config';
 
 const TOKEN = 'inventi_token';
 const USER = 'inventi_user';
@@ -46,7 +47,7 @@ async function pedir<T>(metodo: string, ruta: string, cuerpo?: unknown): Promise
   const token = getToken();
   if (token) headers['Authorization'] = 'Bearer ' + token;
   if (cuerpo !== undefined) headers['Content-Type'] = 'application/json';
-  const res = await fetch('/api' + ruta, {
+  const res = await fetch(getApiBaseUrl() + ruta, {
     method: metodo,
     headers,
     body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo),
@@ -85,7 +86,9 @@ export const api = {
 
 // Descarga autenticada de reportes (xlsx/pdf).
 export async function descargarReporte(ruta: string, nombre: string) {
-  const res = await fetch('/api' + ruta, { headers: { Authorization: 'Bearer ' + getToken() } });
+  const res = await fetch(getApiBaseUrl() + ruta, {
+    headers: { Authorization: 'Bearer ' + getToken() },
+  });
   if (res.status === 401) sesionExpirada();
   if (!res.ok) throw new ApiError(res.status, 'No se pudo generar el reporte');
   const blob = await res.blob();

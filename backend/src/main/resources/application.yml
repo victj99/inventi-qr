@@ -23,3 +23,4 @@ app:
   # Sin valor por defecto: si JWT_SECRET falta o es débil (menos de 32 bytes) el arranque falla.
   jwt-secret: ${JWT_SECRET}
   seed: ${SEED:false}
+  cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:*,http://127.0.0.1:*}
